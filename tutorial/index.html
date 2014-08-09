@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+	<div>
+		<h2>The app</h2>
+		<p>
+			As usual, you can start the app from the <a href="#run" class="shortcut">Run</a> tab, and open it at
+			<a href="http://localhost:9000" target="_blank">http://localhost:9000</a>.
+		</p>
+		<p>
+			You can enter some text and submit it, which should make it appear on the page. By opening it from another 
+			browser, you can simulate another user.
+		</p>
+		
+	</div>
+	<div>
+		<h2>The controller</h2>
+		<p>
+			Let us take a look at the <a href="#code" class="shortcut">Code</a>, in particular that of 
+			<a href="#code/app/controllers/Application.scala">Application.scala</a>.
+			<pre>
+				<code>
+def ws = 
+ WebSocket.tryAcceptWithActor[JsValue, JsValue] { 
+	implicit request =>
+    Future.successful(request.session.get(UID) match {
+      case None => Left(Forbidden)
+      case Some(uid) => Right(UserActor.props(uid))
+    })
+  }
+		  	</code>
+		  </pre>
+		  	Here, the WebSocket.tryAcceptWithActor will instantiate a UserActor with the given Props and a 
+		  	websocket that will send all messages from the client to the UserActor. It will also instantiate 
+		  	another actor, and pass its reference to UserActor's constructor. Messages sent to that other 
+		  	actor will then be forwarded via the websocket to the client side.
+		</p>
+	</div>
+	<div>
+		<h2>The view</h2>
+		<p>
+			See <a href="#code/app/assets/javascripts/index.coffee">index.coffee</a>. Some javascript will 
+			instantiate the client side of the websocket and consume messages from the server. Submission 
+			from the #msgform form will be intercepted, and the content of the text input, converted to json,
+			and sent up the websocket toward the server. 
+		</p>
+	</div>
+	<div>
+		<h2>The model</h2>
+		<p>
+			As said before, <a href="#code/app/actors/UserActor.scala">UserActor</a> serves as the gateway between the 
+			actors and the websockets. It sends the messages to the <a href="#code/app/actors/BoardActor.scala">BoardActor</a>,
+			which are then sent back to all instances of UserActor, and sent down the websocket to the clients.
+		</p>
+	</div>
+</body>
+</html>
