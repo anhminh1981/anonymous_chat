@@ -9,21 +9,19 @@ import akka.actor.ActorRef
 import akka.actor.Props
 import scala.xml.Utility
 
-
 class UserActor(uid: String, board: ActorRef, out: ActorRef) extends Actor with ActorLogging {
-
-
   override def preStart() = {
-    BoardActor() ! Subscribe
+    board ! Subscribe
   }
 
   def receive = LoggingReceive {
-    case Message(muid, s) if sender == board => {
+    case Message(muid, s) if sender == board =>
       val js = Json.obj("type" -> "message", "uid" -> muid, "msg" -> s)
       out ! js
-    }
-    case js: JsValue => (js \ "msg").validate[String] map { Utility.escape(_) }  map { board ! Message(uid, _ ) } 
-    case other => log.error("unhandled: " + other)
+    case js: JsValue =>
+      (js \ "msg").validate[String] map { Utility.escape(_) } foreach { board ! Message(uid, _ ) }
+    case other =>
+      log.error("unhandled: " + other)
   }
 }
 

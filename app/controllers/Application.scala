@@ -14,19 +14,15 @@ import play.api.mvc.WebSocket
 
 object Application extends Controller {
   val UID = "uid"
-  var counter = 0;
+  var counter = 0
 
   def index = Action { implicit request =>
-    {
-      val uid = request.session.get(UID).getOrElse {
-        counter += 1
-        counter.toString
-      }
-      Ok(views.html.index(uid)).withSession {
-        Logger.debug("creation uid " + uid)
-        request.session + (UID -> uid)
-      }
+    val uid: String = request.session.get(UID).getOrElse {
+      counter += 1
+      counter.toString
     }
+    Logger.debug("creation uid " + uid)
+    Ok(views.html.index(uid)).withSession(request.session + (UID -> uid))
   }
 
   def ws = WebSocket.tryAcceptWithActor[JsValue, JsValue] { implicit request =>
@@ -35,5 +31,4 @@ object Application extends Controller {
       case Some(uid) => Right(UserActor.props(uid))
     })
   }
-
 }
