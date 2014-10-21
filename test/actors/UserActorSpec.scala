@@ -28,6 +28,7 @@ class UserActorSpec extends AbstractTestKit("UserActorSpec") with SpecificationL
 
       userActor.receive(testMsg)
 
+      boardProbe.expectMsg(Subscribe)
       boardProbe.expectMsg(Message(uid, text))
 
     }
@@ -40,6 +41,7 @@ class UserActorSpec extends AbstractTestKit("UserActorSpec") with SpecificationL
 
       userActor.receive(testMsg)
 
+      boardProbe.expectMsg(Subscribe)
       boardProbe.expectMsg(Message(uid, "&lt;b&gt;&amp;&lt;/b&gt;"))
 
     }
